@@ -1,0 +1,6 @@
+bin
+env
+lib
+share
+pyvenv.cfg
+test*
