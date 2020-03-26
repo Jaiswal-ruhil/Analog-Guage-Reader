@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 # import paho.mqtt.client as mqtt
-import time
 import math
 
 
