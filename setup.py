@@ -1,7 +1,7 @@
 import setuptools
-from os.path import join, dirname, isfile
+from os.path import join, dirname, isfile, realpath
 
-requirementPath = join(dirname(os.path.realpath(__file__)), 'requirements.txt')
+requirementPath = join(dirname(realpath(__file__)), 'requirements.txt')
 install_requires = []  
 
 if isfile(requirementPath):
