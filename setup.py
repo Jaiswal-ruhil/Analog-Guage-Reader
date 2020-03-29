@@ -1,12 +1,12 @@
-import setuptools
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="analog-gauge-reader",  # Replace with your own username
-    version="0.0.1",
-    author="Example Author",
+    name="analog_gauge_reader",  # Replace with your own username
+    version="0.0.2",
+    author="Ruhil Jaiswal",
     author_email="ruhiljaiswal@gmail.com",
     description="Analod dial reader with opencv",
     long_description=long_description,
