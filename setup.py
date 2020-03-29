@@ -1,4 +1,12 @@
+import setuptools
+from os.path import join, dirname, isfile
 
+requirementPath = join(dirname(os.path.realpath(__file__)), 'requirements.txt')
+install_requires = []  
+
+if isfile(requirementPath):
+    with open(requirementPath) as f:
+        install_requires = list(f.read().splitlines())
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -17,5 +25,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
+    install_requires=install_requires,
     python_requires='>=3.7',
 )
