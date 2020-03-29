@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-# import paho.mqtt.client as mqtt
 import math
 
 
@@ -11,9 +10,7 @@ def show(img, name="unnamed"):
 
 
 def avg_circles(circles, b):
-    avg_x = 0
-    avg_y = 0
-    avg_r = 0
+    avg_x = avg_y = avg_r = 0
     for i in range(b):
         # optional - average for multiple circles (can happen when a gauge is at a slight angle)
         avg_x = avg_x + circles[0][i][0]
@@ -30,7 +27,7 @@ def dist_2_pts(x1, y1, x2, y2):
     return np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 
-def calibrate_gauge(img, gauge_number, file_type, calibration_data, draw=True):
+def calibrate_gauge(img, calibration_data, draw=True):
     '''
         This function should be run using a test image in order to calibrate the range available to the dial as well as the
         units.  It works by first finding the center point and radius of the gauge.  Then it draws lines at hard coded intervals
@@ -58,7 +55,7 @@ def calibrate_gauge(img, gauge_number, file_type, calibration_data, draw=True):
     if draw:
         cv2.circle(img, (x, y), r, (0, 0, 255), 3, cv2.LINE_AA)  # draw circle
         cv2.circle(img, (x, y), 2, (0, 255, 0), 3,
-                cv2.LINE_AA)  # draw center of circle
+                   cv2.LINE_AA)  # draw center of circle
 
     '''
     goes through the motion of a circle and sets x and y values based on the set separation spacing.  Also adds text to each
@@ -93,13 +90,12 @@ def calibrate_gauge(img, gauge_number, file_type, calibration_data, draw=True):
     start = int(interval/4+deviation)
     end = int(interval*3/4+deviation_end)
 
-
     zx, zy = int(p1[start][0]), int(p1[start][1])
 
     if draw:
         for i in range(start, end):
             cv2.line(img, (int(p1[i][0]), int(p1[i][1])),
-                    (int(p2[i][0]), int(p2[i][1])), (0, 255-i-i+46, 0), 2)
+                     (int(p2[i][0]), int(p2[i][1])), (0, 255-i-i+46, 0), 2)
         cv2.line(img, (x, y+r), (x, 0), (225, 225, 0), 2)
         cv2.line(img, (x, y), (x, 0), (225, 225, 0), 2)
         cv2.circle(img, (zx, zy), 5, (225, 225, 0), cv2.LINE_AA)
@@ -116,7 +112,7 @@ def calibrate_gauge(img, gauge_number, file_type, calibration_data, draw=True):
     return min_angle, max_angle, min_value, max_value, units, x, y, r, (zx, zy)
 
 
-def get_current_value(img, min_angle, max_angle, min_value, max_value, x, y, r, zero_point, calibration_data, gauge_number, file_type):
+def get_current_value(img, min_angle, max_angle, min_value, max_value, x, y, r, zero_point, calibration_data):
 
     zx, zy = zero_point
     cx, cy = x, y
@@ -162,25 +158,25 @@ def get_current_value(img, min_angle, max_angle, min_value, max_value, x, y, r, 
     return appx_value
 
 
-def main(gauge_number, calibration_data, file_type="jpg"):
-    img = cv2.imread(f'./images/gauge-{gauge_number}.jpg')
+def main(filelocation, calibration_data):
+    img = cv2.imread(filelocation)
     raw_cropped_img = img[50:700, 0:800]
     min_angle, max_angle, min_value, max_value, units, x, y, r, zero = calibrate_gauge(
-        raw_cropped_img, gauge_number, file_type, calibration_data, False)
-    
+        raw_cropped_img, calibration_data, False)
+
     # r = r
     cropped_img = img[(x-r):(x+r), (y-r):(y+r)]
     # name the calibration image of your gauge 'gauge-#.jpg', for example 'gauge-5.jpg'.  It's written this way so you can easily try multiple images
     min_angle, max_angle, min_value, max_value, units, x, y, r, zero = calibrate_gauge(
-        cropped_img, gauge_number, file_type, calibration_data)
-    
+        cropped_img, calibration_data)
+
     # feed an image (or frame) to get the current value, based on the calibration, by default uses same image as calibration
     # img = cv2.imread('./gauge-%s.%s' % (gauge_number, file_type))
     val = get_current_value(cropped_img, min_angle, max_angle,
-                            min_value, max_value, x, y, r, zero, calibration_data, gauge_number, file_type)
+                            min_value, max_value, x, y, r, zero, calibration_data)
     show(
-        img, f"for gauge_number:{gauge_number} -> Current reading: {val} {units}")
-    print(f"for gauge_number:{gauge_number} -> Current reading: {val} {units}")
+        img, f'for gauge:{filelocation} -> Current reading: {val} {units}')
+    return val
 
 
 if __name__ == '__main__':
@@ -198,5 +194,8 @@ if __name__ == '__main__':
     }
 
     # main(3, calibration_data)
-    for i in range(2, 8):
-        main(i, calibration_data)
+    for gauge_number in range(2, 8):
+        filelocation = f'./analog_gauge_reader/images/gauge-{gauge_number}.jpg'
+        print(filelocation)
+        print(
+            f"for gauge:{filelocation} -> Current reading: {main(filelocation, calibration_data)} {calibration_data['units']}")
